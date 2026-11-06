@@ -1,3 +1,5 @@
+'use server'
+
 import { openai } from '@ai-sdk/openai';
 import { generateText, NoObjectGeneratedError, Output } from 'ai';
 import { vacatureSchema, type Vacature } from '@/lib/vacature/schema';
