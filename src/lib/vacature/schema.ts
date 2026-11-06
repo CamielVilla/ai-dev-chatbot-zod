@@ -1,11 +1,13 @@
-import { z } from 'zod'
-export const vacatureSchema = z.object({
-    functietitel: z.string(),
-    bedrijf: z.string().nullable(),
-    niveau: z.enum(['junior', 'medior', 'senior', 'onbekend']),
-    salarisMin: z.number().int().nullable(),
-    vaardigheden: z.array(z.string()),
-    remote: z.boolean(),
-});
+// TODO: importeer z uit 'zod'
 
-export type Vacature = z.infer<typeof  vacatureSchema>;
+// TODO: maak hier vacatureSchema met z.object(): functietitel, bedrijf (nullable), niveau (enum), salarisMin (int, nullable), vaardigheden (array) en remote (boolean)
+
+// TODO: vervang dit tijdelijke type door: export type Vacature = z.infer<typeof vacatureSchema>;
+export type Vacature = {
+    functietitel: string;
+    bedrijf: string | null;
+    niveau: 'junior' | 'medior' | 'senior' | 'onbekend';
+    salarisMin: number | null;
+    vaardigheden: string[];
+    remote: boolean;
+};
