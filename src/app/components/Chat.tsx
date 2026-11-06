@@ -1,9 +1,11 @@
-
 'use client'
 
 import {useChat} from "@ai-sdk/react";
 import type {UIMessage} from "ai";
 import {useState} from "react";
+import {extractVacature} from "@/lib/vacature/actions";
+import type {Vacature} from "@/lib/vacature/schema";
+import VacatureKaart from "@/app/components/VacatureKaart";
 
 type ChatProps = {
     id: string;
@@ -14,6 +16,33 @@ export default function Chat ({ id, initialMessages }: ChatProps) {
     const { messages, sendMessage, status, error, stop, regenerate } = useChat({ id, messages: initialMessages});
     const isLoading = status === 'submitted' || status === 'streaming';
     const [input, setInput] = useState('');
+
+    const [vacature, setVacature] = useState<Vacature | null>(null);
+    const [vacatureFout, setVacatureFout] = useState<string | null>(null);
+    const [isAnalyseren, setIsAnalyseren] = useState(false);
+
+    async function analyseerVacature() {
+        if (!input.trim()) return;
+
+        setIsAnalyseren(true);
+        setVacature(null);
+        setVacatureFout(null);
+
+        try {
+            const resultaat = await extractVacature(input);
+
+            if (resultaat.vacature) {
+                setVacature(resultaat.vacature);
+                setInput('');
+            } else {
+                setVacatureFout(resultaat.error ?? 'Er ging iets mis bij het analyseren van de vacature.');
+            }
+        } catch {
+            setVacatureFout('Er ging iets mis bij het analyseren van de vacature.');
+        } finally {
+            setIsAnalyseren(false);
+        }
+    }
 
     return (
         <main className="mx-auto flex h-screen w-full max-w-2xl flex-col p-4">
@@ -61,6 +90,20 @@ export default function Chat ({ id, initialMessages }: ChatProps) {
                 )}
             </div>
 
+            {isAnalyseren && (
+                <p className="mt-4 animate-pulse text-gray-500">Vacature analyseren...</p>
+            )}
+
+            {vacatureFout && (
+                <p className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-red-700">{vacatureFout}</p>
+            )}
+
+            {vacature && (
+                <div className="mt-4">
+                    <VacatureKaart vacature={vacature} onSluiten={() => setVacature(null)} />
+                </div>
+            )}
+
             <form
                 onSubmit={(event) => {
                     event.preventDefault();
@@ -86,13 +129,23 @@ export default function Chat ({ id, initialMessages }: ChatProps) {
                         Stop
                     </button>
                 ) : (
-                    <button
-                        type="submit"
-                        disabled={!input.trim()}
-                        className="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
-                    >
-                        Verstuur
-                    </button>
+                    <>
+                        <button
+                            type="submit"
+                            disabled={!input.trim() || isAnalyseren}
+                            className="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                        >
+                            Verstuur
+                        </button>
+                        <button
+                            type="button"
+                            onClick={analyseerVacature}
+                            disabled={!input.trim() || isAnalyseren}
+                            className="rounded-lg border border-blue-600 px-4 py-2 font-semibold text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+                        >
+                            Analyseer als vacature
+                        </button>
+                    </>
                 )}
             </form>
         </main>
