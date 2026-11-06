@@ -1,5 +1,5 @@
 import {createSupabaseServerClient} from "@/lib/supabase/server";
-import type {UIMessage} from "ai";
+import {generateId, type UIMessage} from "ai";
 import {Json} from "@/lib/supabase/database.types";
 
 export async function getLatestChat() {
@@ -17,7 +17,9 @@ export async function getLatestChat() {
 
     return {
         id: data.id,
-        messages: data.messages as unknown as UIMessage[],
+        messages: (data.messages as unknown as UIMessage[]).map((message) =>
+            message.id ? message : { ...message, id: generateId() }
+        ),
     };
 }
 

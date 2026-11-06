@@ -2,6 +2,7 @@ import { openai } from '@ai-sdk/openai';
 import {
   convertToModelMessages,
   createUIMessageStreamResponse,
+  generateId,
   streamText,
   toUIMessageStream,
   type UIMessage,
@@ -41,6 +42,7 @@ export async function POST(request: Request) {
       stream: toUIMessageStream({
         stream: result.stream,
         originalMessages: messages,
+        generateMessageId: generateId,
         onError: (error) => {
           console.error('Fout bij OpenAI:', error);
           return 'Er ging iets mis bij het ophalen van een antwoord.';
